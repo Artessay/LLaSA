@@ -7,7 +7,6 @@ import subprocess
 import sys
 import random
 from datetime import datetime
-from functools import partial
 
 import numpy as np
 import torch
@@ -23,11 +22,6 @@ try:
 except ImportError:
     tensorboard = None
 
-try:
-    import horovod.torch as hvd
-except ImportError:
-    hvd = None
-
 from open_clip import create_model_and_transforms, trace_model, get_tokenizer, create_loss
 from open_clip_train.data import get_data
 from open_clip_train.distributed import is_master, init_distributed_device, broadcast_object
@@ -35,7 +29,7 @@ from open_clip_train.logger import setup_logging
 from open_clip_train.params import parse_args
 from open_clip_train.scheduler import cosine_lr, const_lr, const_lr_cooldown
 from open_clip_train.train import train_one_epoch, evaluate
-from open_clip_train.file_utils import pt_load, check_exists, start_sync_process, remote_sync
+from open_clip_train.file_utils import pt_load, start_sync_process, remote_sync
 
 
 LATEST_CHECKPOINT_NAME = "epoch_latest.pt"
@@ -250,17 +244,6 @@ def main(args):
             output_dict=True,
             cache_dir=args.cache_dir,
         )
-    if args.use_bnb_linear is not None:
-        print('=> using a layer from bitsandbytes.\n'
-              '   this is an experimental feature which requires two extra pip installs\n'
-              '   pip install bitsandbytes triton'
-              '   please make sure to use triton 2.0.0')
-        import bitsandbytes as bnb
-        from open_clip.utils import replace_linear
-        print(f'=> replacing linear layers with {args.use_bnb_linear}')
-        linear_replacement_cls = getattr(bnb.nn.triton_based_modules, args.use_bnb_linear)
-        replace_linear(model, linear_replacement_cls)
-        model = model.to(device)
 
     random_seed(args.seed, args.rank)
 
@@ -360,17 +343,12 @@ def main(args):
                     f'Created {type(optimizer).__name__} ({args.opt}) optimizer: {defaults}'
                 )
 
-        if args.horovod:
-            optimizer = hvd.DistributedOptimizer(optimizer, named_parameters=model.named_parameters())
-            hvd.broadcast_parameters(model.state_dict(), root_rank=0)
-            hvd.broadcast_optimizer_state(optimizer, root_rank=0)
-
         scaler = None
         if args.precision == "amp":
             try:
                 scaler = torch.amp.GradScaler(device=device)
             except (AttributeError, TypeError) as e:
-                scaler = torch.cuda.amp.GradScaler()
+                scaler = torch.amp.GradScaler("cuda")
 
     # optionally resume from a checkpoint
     start_epoch = 0
@@ -466,10 +444,6 @@ def main(args):
         model = torch.compile(original_model)
 
     if 'train' not in data:
-        # If using int8, convert to inference mode.
-        if args.use_bnb_linear is not None:
-            from open_clip.utils import convert_int8_model_to_inference_mode
-            convert_int8_model_to_inference_mode(model)
         # Evaluate.
         evaluate(model, data, start_epoch, args, tb_writer=writer, tokenizer=tokenizer)
         return

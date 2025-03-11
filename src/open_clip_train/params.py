@@ -3,7 +3,7 @@ import ast
 
 
 def get_default_params(model_name):
-    # Params from paper (https://arxiv.org/pdf/2103.00020.pdf)
+    # Params from paper "Learning Transferable Visual Models From Natural Language Supervision".
     model_name = model_name.lower()
     if "vit" in model_name:
         return {"lr": 5.0e-4, "beta1": 0.9, "beta2": 0.98, "eps": 1.0e-6}
@@ -362,12 +362,6 @@ def parse_args(args):
         default=False,
         action="store_true",
         help="If true, we copy the entire base on the log directory, and execute from there."
-    )
-    parser.add_argument(
-        "--horovod",
-        default=False,
-        action="store_true",
-        help="Use horovod for distributed training."
     )
     parser.add_argument(
         "--ddp-static-graph",

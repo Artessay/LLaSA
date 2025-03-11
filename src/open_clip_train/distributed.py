@@ -5,10 +5,6 @@ from typing import Optional
 import torch
 import torch.distributed as dist
 
-try:
-    import horovod.torch as hvd
-except ImportError:
-    hvd = None
 
 
 def is_global_master(args):
@@ -134,15 +130,7 @@ def init_distributed_device_so(
         warnings.warn(f"Device {device} was not available, falling back to CPU.")
         device_type = device = 'cpu'
 
-    if horovod:
-        import horovod.torch as hvd
-        assert hvd is not None, "Horovod is not installed"
-        hvd.init()
-        local_rank = int(hvd.local_rank())
-        global_rank = hvd.rank()
-        world_size = hvd.size()
-        distributed = True
-    elif is_using_distributed():
+    if is_using_distributed():
         if dist_backend is None:
             dist_backends = {
                 "cuda": "nccl",
@@ -197,22 +185,18 @@ def init_distributed_device_so(
 
 def broadcast_object(args, obj, src=0):
     # broadcast a pickle-able python object from rank-0 to all ranks
-    if args.horovod:
-        return hvd.broadcast_object(obj, root_rank=src)
+
+    if args.rank == src:
+        objects = [obj]
     else:
-        if args.rank == src:
-            objects = [obj]
-        else:
-            objects = [None]
-        dist.broadcast_object_list(objects, src=src)
-        return objects[0]
+        objects = [None]
+    dist.broadcast_object_list(objects, src=src)
+    return objects[0]
 
 
 def all_gather_object(args, obj, dst=0):
     # gather a pickle-able python object across all ranks
-    if args.horovod:
-        return hvd.allgather_object(obj)
-    else:
-        objects = [None for _ in range(args.world_size)]
-        dist.all_gather_object(objects, obj)
-        return objects
+
+    objects = [None for _ in range(args.world_size)]
+    dist.all_gather_object(objects, obj)
+    return objects
