@@ -7,14 +7,13 @@ import time
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.nn.parallel.distributed import DistributedDataParallel
 
 try:
     import wandb
 except ImportError:
     wandb = None
 
-from open_clip import get_input_dtype, CLIP, CustomTextCLIP
+from open_clip import get_input_dtype
 from open_clip_train.distributed import is_master
 from open_clip_train.zero_shot import zero_shot_eval
 from open_clip_train.precision import get_autocast
@@ -61,14 +60,12 @@ def backward(total_loss, scaler):
         total_loss.backward()
 
 
-def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=None):
+def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, args, tb_writer=None):
     device = torch.device(args.device)
     autocast = get_autocast(args.precision, device_type=device.type)
     input_dtype = get_input_dtype(args.precision)
 
     model.train()
-    if args.distill:
-        dist_model.eval()
 
     data['train'].set_epoch(epoch)  # set epoch in process safe manner via sampler or shared_epoch
     dataloader = data['train'].dataloader
@@ -100,10 +97,6 @@ def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist
             with autocast():
                 model_out = model(images, texts)
                 logit_scale = model_out["logit_scale"]
-                if args.distill:
-                    with torch.no_grad():
-                        dist_model_out = dist_model(images, texts)
-                    model_out.update({f'dist_{k}': v for k, v in dist_model_out.items()})
                 losses = loss(**model_out, output_dict=True)
 
                 total_loss = sum(losses.values())

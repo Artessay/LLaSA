@@ -442,22 +442,6 @@ def parse_args(args):
         help="If true, delete previous checkpoint after storing a new one."
     )
     parser.add_argument(
-        "--distill-model",
-        default=None,
-        help='Which model arch to distill from, if any.'
-    )
-    parser.add_argument(
-        "--distill-pretrained",
-        default=None,
-        help='Which pre-trained weights to distill from, if any.'
-    )
-    parser.add_argument(
-        "--use-bnb-linear",
-        default=None,
-        help='Replace the network linear layers from the bitsandbytes library. '
-        'Allows int8 training/inference, etc.'
-    )
-    parser.add_argument(
         "--siglip",
         default=False,
         action="store_true",

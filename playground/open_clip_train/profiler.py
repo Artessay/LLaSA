@@ -1,3 +1,8 @@
+"""
+This script profiles the OpenCLIP models and outputs the number of FLOPs and
+activations for each layer.
+"""
+
 import argparse
 
 import torch

@@ -404,15 +404,15 @@ _convnext_xxlarge = dict(
     laion2b_s34b_b82k_augreg_soup=_pcfg(hf_hub='laion/CLIP-convnext_xxlarge-laion2B-s34B-b82K-augreg-soup/'),
 )
 
-_coca_VITB32 = dict(
-    laion2b_s13b_b90k=_pcfg(hf_hub='laion/CoCa-ViT-B-32-laion2B-s13B-b90k/'),
-    mscoco_finetuned_laion2b_s13b_b90k=_pcfg(hf_hub='laion/mscoco_finetuned_CoCa-ViT-B-32-laion2B-s13B-b90k/')
-)
+# _coca_VITB32 = dict(
+#     laion2b_s13b_b90k=_pcfg(hf_hub='laion/CoCa-ViT-B-32-laion2B-s13B-b90k/'),
+#     mscoco_finetuned_laion2b_s13b_b90k=_pcfg(hf_hub='laion/mscoco_finetuned_CoCa-ViT-B-32-laion2B-s13B-b90k/')
+# )
 
-_coca_VITL14 = dict(
-    laion2b_s13b_b90k=_pcfg(hf_hub='laion/CoCa-ViT-L-14-laion2B-s13B-b90k/'),
-    mscoco_finetuned_laion2b_s13b_b90k=_pcfg(hf_hub='laion/mscoco_finetuned_CoCa-ViT-L-14-laion2B-s13B-b90k/')
-)
+# _coca_VITL14 = dict(
+#     laion2b_s13b_b90k=_pcfg(hf_hub='laion/CoCa-ViT-L-14-laion2B-s13B-b90k/'),
+#     mscoco_finetuned_laion2b_s13b_b90k=_pcfg(hf_hub='laion/mscoco_finetuned_CoCa-ViT-L-14-laion2B-s13B-b90k/')
+# )
 
 
 _PRETRAINED = {
@@ -444,8 +444,8 @@ _PRETRAINED = {
     "convnext_large_d_320": _convnext_large_d_320,
     "convnext_xxlarge": _convnext_xxlarge,
 
-    "coca_ViT-B-32": _coca_VITB32,
-    "coca_ViT-L-14": _coca_VITL14,
+    # "coca_ViT-B-32": _coca_VITB32,
+    # "coca_ViT-L-14": _coca_VITL14,
 
     "EVA01-g-14": dict(
         # from QuanSun/EVA-CLIP/EVA01_CLIP_g_14_psz14_s11B.pt

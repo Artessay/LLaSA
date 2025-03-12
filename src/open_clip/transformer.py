@@ -781,7 +781,7 @@ class VisionTransformer(nn.Module):
             intermediates = [self.ln_post(xi) for xi in intermediates]
         num_prefix_tokens = 1  # one class token that's always there (as of now)
         if num_prefix_tokens:
-            # split prefix (e.g. class, distill) and spatial feature tokens
+            # split prefix (e.g. class) and spatial feature tokens
             prefix_tokens = [y[:, 0:num_prefix_tokens] for y in intermediates]
             intermediates = [y[:, num_prefix_tokens:] for y in intermediates]
         else:
